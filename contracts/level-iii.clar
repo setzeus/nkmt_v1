@@ -29,9 +29,9 @@
 (define-constant ERR-NOT-LISTED (err u103))
 (define-constant ERR-WRONG-COMMISSION (err u104))
 (define-constant ERR-INCORRECT-SUBTYPES (err u105))
-(define-constant ERR-TRANSFER-FIRST (err u106))
-(define-constant ERR-TRANSFER-SECOND (err u107))
-(define-constant ERR-TRANSFER-THIRD (err u108))
+(define-constant ERR-BURN-FIRST (err u106))
+(define-constant ERR-BURN-SECOND (err u107))
+(define-constant ERR-BURN-THIRD (err u108))
 
 ;; vars
 (define-data-var ipfs-root (string-ascii 102) "ipfs://ipfs/QmYcrELFT5c9pjSygFFXk8jfVMHB5cBoWJDGafbHbATvrP/pm_")
@@ -173,14 +173,14 @@
     ;; Assert that subtypes are correct
     (asserts! (is-eq subtype-total u6) ERR-INCORRECT-SUBTYPES)
 
-    ;; Transfer level-II-id-1
-    (unwrap! (contract-call? .level-ii transfer level-II-id-1 tx-sender (as-contract tx-sender)) ERR-TRANSFER-FIRST)
+    ;; Burn level-II-id-1
+    (unwrap! (contract-call? .level-ii burn level-II-id-1) ERR-BURN-FIRST)
 
-    ;; Transfer level-II-id-2
-    (unwrap! (contract-call? .level-ii transfer level-II-id-2 tx-sender (as-contract tx-sender)) ERR-TRANSFER-SECOND)
+    ;; Burn level-II-id-2
+    (unwrap! (contract-call? .level-ii burn level-II-id-2) ERR-BURN-SECOND)
 
-    ;; Transfer level-II-id-3
-    (unwrap! (contract-call? .level-ii transfer level-II-id-3 tx-sender (as-contract tx-sender)) ERR-TRANSFER-THIRD)
+    ;; Burn level-II-id-3
+    (unwrap! (contract-call? .level-ii burn level-II-id-3) ERR-BURN-THIRD)
     
     ;; Mint level-III
     (try! (nft-mint? level-III current-level-III-index tx-sender))

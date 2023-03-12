@@ -55,6 +55,8 @@
 (define-constant ERR-NOT-ADMIN (err u116))
 (define-constant ERR-NFT-MINT (err u117))
 (define-constant ERR-NFT-MINT-MAP (err u118))
+(define-constant ERR-NFT-BURN (err u119))
+
 
 ;; storage
 (define-map market uint {price: uint, commission: principal})
@@ -301,6 +303,26 @@
 
         ;; Update level-I-subtype-index
         (ok (assign-next-subtype))
+
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;
+;; Burn Function ;;
+;;;;;;;;;;;;;;;;;;;
+;; @desc - burn function for Level-I NFTs
+;; @param - id (uint): id of NFT to burn
+(define-public (burn (id uint))
+    (let
+        (
+            (owner (unwrap! (nft-get-owner? level-I id) ERR-NOT-AUTH))
+        )
+
+        ;; Assert tx-sender is owner of NFT
+        (asserts! (is-eq tx-sender owner) ERR-NOT-AUTH)
+
+        ;; Burn NFT
+        (ok (unwrap! (nft-burn? level-I id tx-sender) ERR-NFT-BURN))
 
     )
 )

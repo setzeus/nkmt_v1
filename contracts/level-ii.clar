@@ -29,11 +29,12 @@
 (define-constant ERR-NOT-LISTED (err u103))
 (define-constant ERR-WRONG-COMMISSION (err u104))
 (define-constant ERR-INCORRECT-SUBTYPES (err u105))
-(define-constant ERR-TRANSFER-FIRST (err u106))
-(define-constant ERR-TRANSFER-SECOND (err u107))
-(define-constant ERR-TRANSFER-THIRD (err u108))
-(define-constant ERR-TRANSFER-FOURTH (err u109))
+(define-constant ERR-BURN-FIRST (err u106))
+(define-constant ERR-BURN-SECOND (err u107))
+(define-constant ERR-BURN-THIRD (err u108))
+(define-constant ERR-BURN-FOURTH (err u109))
 (define-constant ERR-MINT-LEVEL-II (err u110))
+(define-constant ERR-NFT-BURN (err u110))
 
 ;; vars
 (define-data-var ipfs-root (string-ascii 102) "ipfs://ipfs/QmYcrELFT5c9pjSygFFXk8jfVMHB5cBoWJDGafbHbATvrP/pm_")
@@ -178,17 +179,17 @@
     ;; Assert that all four level-I's have different subtypes
     (asserts! (is-eq subtype-total u10) ERR-INCORRECT-SUBTYPES)
 
-    ;; Transfer level-I-id-1 to the contract
-    (unwrap! (contract-call? .level-i transfer level-I-id-1 tx-sender 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG) ERR-TRANSFER-FIRST)
+    ;; Burn level-I-id-1 NFT
+    (unwrap! (contract-call? .level-i burn level-I-id-1) ERR-BURN-FIRST)
 
-    ;; Transfer level-I-id-2 to the contract
-    (unwrap! (contract-call? .level-i transfer level-I-id-2 tx-sender 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG) ERR-TRANSFER-SECOND)
+    ;; Burn level-I-id-2 NFT
+    (unwrap! (contract-call? .level-i burn level-I-id-2) ERR-BURN-SECOND)
 
-    ;; Transfer level-I-id-3 to the contract
-    (unwrap! (contract-call? .level-i transfer level-I-id-3 tx-sender 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG) ERR-TRANSFER-THIRD)
+    ;; Burn level-I-id-3 NFT
+    (unwrap! (contract-call? .level-i burn level-I-id-3) ERR-BURN-THIRD)
 
-    ;; Transfer level-I-id-4 to the contract
-    (unwrap! (contract-call? .level-i transfer level-I-id-4 tx-sender 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG) ERR-TRANSFER-FOURTH)
+    ;; Burn level-I-id-4 NFT
+    (unwrap! (contract-call? .level-i burn level-I-id-4) ERR-BURN-FOURTH)
     
     ;; Insert the new level-II sub-type into the sub-type map
     (map-insert sub-type current-level-II-index current-level-II-subtype-index)
@@ -217,13 +218,33 @@
             (var-set level-II-subtype-index u0)
           )
       )
-    )
-  )
+ )
+)
 
   ;; @desc sub-type helper function - helps assign sub-types of type 0,1,2 when minted
   (define-read-only (check-subtype (level-II-id uint))
       (map-get? sub-type level-II-id)
   )
+
+;;;;;;;;;;;;;;;;;;;
+;; Burn Function ;;
+;;;;;;;;;;;;;;;;;;;
+;; @desc - burn function for Level-I NFTs
+;; @param - id (uint): id of NFT to burn
+(define-public (burn (id uint))
+    (let
+        (
+            (owner (unwrap! (nft-get-owner? level-II id) ERR-NOT-AUTH))
+        )
+
+        ;; Assert tx-sender is owner of NFT
+        (asserts! (is-eq tx-sender owner) ERR-NOT-AUTH)
+
+        ;; Burn NFT
+        (ok (unwrap! (nft-burn? level-II id tx-sender) ERR-NFT-BURN))
+
+    )
+)
 
 
 
