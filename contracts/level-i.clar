@@ -30,10 +30,6 @@
 ;; Collection test price (.0255 STX)
 (define-constant level-I-test-price u25500000)
 
-;; Collection real price 255 STX
-(define-constant level-I-price u255000000)
-(define-constant contract-owner tx-sender)
-
 ;; error messages
 (define-constant ERR-ALL-MINTED (err u101))
 (define-constant ERR-1ST-MINT-OUT (err u102))
@@ -70,6 +66,9 @@
 
 ;; Helper principal for removing an admin
 (define-data-var admin-to-remove principal tx-sender)
+
+;; Mint price -> trying to keep parity w/ $250 USD 
+(define-data-var mint-price uint u100000000)
 
 ;; level-I basics
 (define-data-var metadata-frozen bool true)
@@ -224,7 +223,7 @@
       (asserts! (< current-level-I-index level-I-limit) ERR-ALL-MINTED)
     
       ;; Charge the user level-I-price
-      (unwrap! (stx-transfer? level-I-price tx-sender (as-contract tx-sender)) ERR-STX-TRANSFER)
+      (unwrap! (stx-transfer? (var-get mint-price) tx-sender (as-contract tx-sender)) ERR-STX-TRANSFER)
 
       ;; Mint 1 Level-I NFT
       (unwrap! (nft-mint? level-I current-level-I-index tx-sender) ERR-NFT-MINT)
@@ -353,6 +352,22 @@
 ;;;;; Admin Functions ;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Update Mint Price
+;; @desc - function for any of the admins to var-set the mint price
+;; @param - new-mint-price (uint): new mint price
+(define-public (update-mint-price (new-mint-price uint))
+  (let
+    (
+      (current-admin-list (var-get admin-list))
+    )
+    ;; asserts tx-sender is an admin using is-some & index-of
+    (asserts! (is-some (index-of current-admin-list tx-sender)) ERR-NOT-AUTH)
+
+    ;; var-set new mint price
+    (ok (var-set mint-price new-mint-price))
+  )
+)
 
 ;; Unlock Contract STX
 ;; @desc - function for any of the admins to transfer STX out of contract
