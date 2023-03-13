@@ -21,7 +21,6 @@
 
 ;; constants
 (define-constant level-II-limit u6001)
-(define-constant contract-owner tx-sender)
 
 ;; error messages
 (define-constant ERR-ALL-MINTED (err u101))
@@ -166,18 +165,17 @@
       (current-level-II-index (var-get level-II-index))
       (next-level-II-index (+ u1 current-level-II-index))
       (current-level-II-subtype-index (var-get level-II-subtype-index))
-      (nft-0-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-1)))
-      (nft-1-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-2)))
-      (nft-2-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-3)))
-      (nft-3-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-4)))
-      (subtype-total (fold + (list nft-0-subtype nft-1-subtype nft-2-subtype nft-3-subtype) u0))
+      (nft-1-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-1)))
+      (nft-2-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-2)))
+      (nft-3-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-3)))
+      (nft-4-subtype (default-to u10 (contract-call? .level-i check-subtype level-I-id-4)))
     )
 
     ;; Assert that the level-II index is less than the limit
     (asserts! (< (var-get level-II-index) level-II-limit) ERR-ALL-MINTED)
 
-    ;; Assert that all four level-I's have different subtypes
-    (asserts! (is-eq subtype-total u10) ERR-INCORRECT-SUBTYPES)
+    ;; Assert that all four level-I's have different subtypes using is-eq
+    (asserts! (and (is-eq nft-1-subtype u1) (is-eq nft-2-subtype u2) (is-eq nft-3-subtype u3) (is-eq nft-4-subtype u4)) ERR-INCORRECT-SUBTYPES)
 
     ;; Burn level-I-id-1 NFT
     (unwrap! (contract-call? .level-i burn level-I-id-1) ERR-BURN-FIRST)

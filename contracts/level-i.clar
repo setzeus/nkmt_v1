@@ -3,8 +3,8 @@
 ;; Written by the StrataLabs team
 
 ;; Level-I NFT
-;; 1st mint consists of 13k @ 255 stx, 2nd mint consists of 9k @ 536 stx, & 3rd mint of 2k @ 677 stx
-;; Each level-I NFT has one of four different "sub-types" (u0,u1,u2,u3). A user needs one of each sub-type to qualify for a level-II NFT
+;; 24k collection total, each NFT has one of four sub-types (u1,u2,u3,u4) & is sold for 255 STX
+;; Each level-I NFT has one of four different "sub-types" (u1,u2,u3,u4). A user needs one of each sub-type to qualify for a level-II NFT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,13 +28,11 @@
 (define-constant level-I-limit u24001)
 
 ;; Collection test price (.0255 STX)
-(define-constant level-I-test-price u25500)
+(define-constant level-I-test-price u25500000)
 
 ;; Collection real price 255 STX
 (define-constant level-I-price u255000000)
 (define-constant contract-owner tx-sender)
-(define-constant height-one block-height)
-(define-constant admin-mint-limit u200)
 
 ;; error messages
 (define-constant ERR-ALL-MINTED (err u101))
@@ -79,8 +77,6 @@
 (define-data-var level-I-index uint u1)
 (define-data-var level-I-subtype-index uint u1)
 
-;; admin mint count
-(define-data-var admin-mint-count uint u1)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Read-Only Funcs ;;
@@ -274,7 +270,7 @@
         (asserts! (is-some (index-of (var-get admin-list) tx-sender)) ERR-NOT-AUTH)
 
         ;; Assert that mint-count length is greater than u0 && that mint-count length is less than or equal to mints-remaining
-        (asserts! (and (> (len mint-count) u0) (<= (len mint-count) mints-remaining)) ERR-ALL-MINTED)
+        (asserts! (and (> (len mint-count) u0) (< (len mint-count) mints-remaining)) ERR-ALL-MINTED)
 
         ;; Private helper function to mint using map
         (ok (map admin-mint-private-helper mint-count))
@@ -357,6 +353,23 @@
 ;;;;; Admin Functions ;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Unlock Contract STX
+;; @desc - function for any of the admins to transfer STX out of contract
+;; @param - amount (uint): amount of STX to transfer, recipient (principal): recipient of STX
+(define-public (unlock-contract-stx (amount uint) (recipient principal))
+  (let
+    (
+      (current-admin-list (var-get admin-list))
+      (current-admin tx-sender)
+    )
+    ;; asserts tx-sender is an admin using is-some & index-of
+    (asserts! (is-some (index-of current-admin-list tx-sender)) ERR-NOT-AUTH)
+
+    ;; transfer STX
+    (ok (unwrap! (as-contract (stx-transfer? amount tx-sender recipient)) ERR-STX-TRANSFER))
+  )
+)
 
 ;; Add New Admin
 ;; @desc function for admin to add new principal to admin list

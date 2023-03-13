@@ -21,7 +21,6 @@
 
 ;; constants
 (define-constant level-III-limit u2001)
-(define-constant contract-owner tx-sender)
 
 ;; error messages
 (define-constant ERR-ALL-MINTED (err u101))
@@ -161,17 +160,18 @@
     (
       (current-level-III-index (var-get level-III-index))
       (next-level-III-index (+ u1 (var-get level-III-index)))
-      (nft-0-subtype (default-to u6 (contract-call? .level-ii check-subtype level-II-id-1)))
-      (nft-1-subtype (default-to u6 (contract-call? .level-ii check-subtype level-II-id-2)))
-      (nft-2-subtype (default-to u6 (contract-call? .level-ii check-subtype level-II-id-3)))
-      (subtype-total (fold + (list nft-0-subtype nft-1-subtype nft-2-subtype) u0))
+      (nft-1-subtype (default-to u6 (contract-call? .level-ii check-subtype level-II-id-1)))
+      (nft-2-subtype (default-to u6 (contract-call? .level-ii check-subtype level-II-id-2)))
+      (nft-3-subtype (default-to u6 (contract-call? .level-ii check-subtype level-II-id-3)))
     )
 
     ;; Assert that not all level-III have been minted
     (asserts! (< (var-get level-III-index) level-III-limit) ERR-ALL-MINTED)
 
     ;; Assert that subtypes are correct
-    (asserts! (is-eq subtype-total u6) ERR-INCORRECT-SUBTYPES)
+    ;;(asserts! (is-eq subtype-total u6) ERR-INCORRECT-SUBTYPES)
+    ;; Assert that sub-types are correct using And & is-eq
+    (asserts! (and (is-eq nft-1-subtype u1) (is-eq nft-2-subtype u2) (is-eq nft-3-subtype u3)) ERR-INCORRECT-SUBTYPES)
 
     ;; Burn level-II-id-1
     (unwrap! (contract-call? .level-ii burn level-II-id-1) ERR-BURN-FIRST)

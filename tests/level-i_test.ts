@@ -3,24 +3,39 @@ import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarine
 import { assertEquals } from 'https://deno.land/std@0.90.0/testing/asserts.ts';
 
 Clarinet.test({
-    name: "Ensure that <...>",
+    name: "Public Mint 1 Level I",
     async fn(chain: Chain, accounts: Map<string, Account>) {
-        let block = chain.mineBlock([
-            /* 
-             * Add transactions with: 
-             * Tx.contractCall(...)
-            */
-        ]);
-        assertEquals(block.receipts.length, 0);
-        assertEquals(block.height, 2);
 
-        block = chain.mineBlock([
-            /* 
-             * Add transactions with: 
-             * Tx.contractCall(...)
-            */
+        let deployer = accounts.get('deployer')!;
+        let wallet_1 = accounts.get('wallet_1')!;
+        console.log(chain.getAssetsMaps())
+        
+        let mintBlock = chain.mineBlock([
+            Tx.contractCall("level-i", "public-mint-1-level-I", [], deployer.address),
         ]);
-        assertEquals(block.receipts.length, 0);
-        assertEquals(block.height, 3);
+        console.log(chain.getAssetsMaps())
+
+        console.log(mintBlock.receipts[0].result);
+        mintBlock.receipts[0].result.expectOk();
+        assertEquals(chain.getAssetsMaps().assets['.level-i.level-I'][deployer.address], 1);
+    },
+});
+
+Clarinet.test({
+    name: "Public Mint 2 Level I",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+
+        let deployer = accounts.get('deployer')!;
+        let wallet_1 = accounts.get('wallet_1')!;
+        console.log(chain.getAssetsMaps())
+        
+        let mintBlock = chain.mineBlock([
+            Tx.contractCall("level-i", "public-mint-2-level-I", [], deployer.address),
+        ]);
+        console.log(chain.getAssetsMaps())
+
+        console.log(mintBlock.receipts[0].result);
+        mintBlock.receipts[0].result.expectOk();
+        assertEquals(chain.getAssetsMaps().assets['.level-i.level-I'][deployer.address], 2);
     },
 });
